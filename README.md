@@ -6,7 +6,7 @@ By default there's a global logger instance.
 The destructor takes care of flushing any remaining message.
 
 Usage:
-
+```
 #include "Logger.h"
 namespace engine {extern logger Logger;}
 
@@ -15,3 +15,4 @@ int main()
   logger.log("Hello world!");
   return(0);
   }
+```
