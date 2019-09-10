@@ -1,20 +1,18 @@
 #pragma once
 
-#include <condition_variable>
-#include <mutex>
-#include <thread>
-#include <queue>
-#include <string>
 #include <fstream>
-#include <sstream>
+#include <string>
+#include <queue>
+#include <thread>
+#include <mutex>
 
-namespace engine 
-	{
-	class Logger
+class Logger
 		{
 		private:
-			std::queue<std::string>* queue;
 			std::ofstream log_file;
+
+			std::queue<std::string> queue_log;
+			std::queue<std::string> queue_write;
 			std::thread* thread = nullptr;
 
 			std::condition_variable work_available;
@@ -22,11 +20,11 @@ namespace engine
 			bool running = true;
 
 			void writer();
-			void write_all(std::queue<std::string>* queue);
+			void write_all();
 
 		public:
 			void log(std::string string);
 			Logger();
+			Logger(std::string fname);
 			~Logger();
 		};
-	}

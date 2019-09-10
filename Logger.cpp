@@ -1,57 +1,52 @@
 #include "stdafx.h"
 #include "Logger.h"
 
-namespace engine
-	{
-	void Logger::writer()
+void Logger::writer()
 		{
 		while (running)
 			{
 			std::unique_lock<std::mutex> lock(queue_free);
-			while (queue->empty()) { work_available.wait(lock); }
+			work_available.wait(lock);
 
-			std::queue<std::string>* tmp = queue;
-			queue = new std::queue<std::string>();
+			queue_write.swap(queue_log);
 
 			lock.unlock();
 
-			write_all(tmp);
+			write_all();
 			}
 		}
-	void Logger::write_all(std::queue<std::string>* queue)
+
+	void Logger::write_all()
 		{
-		while (!queue->empty()) { log_file << queue->front() << std::endl; queue->pop(); }
-		delete queue;
+		while (!queue_write.empty()) { log_file << queue_write.front() << std::endl; queue_write.pop(); }
 		}
 
 	void Logger::log(std::string string)
 		{
-		std::unique_lock<std::mutex> lock(queue_free);
+		//std::unique_lock<std::mutex> lock(queue_free);
 
-		bool was_empty = queue->empty();
-		queue->push(string);
+		queue_free.lock();
+		queue_log.push(string);
 
-		lock.unlock();
+		queue_free.unlock();
 
-		if (was_empty) { work_available.notify_one(); }
+		work_available.notify_one();
 		}
 
-	Logger::Logger()
+	Logger::Logger() : Logger("log.txt") {}
+	Logger::Logger(std::string fname = "log.txt")
 		{
-		log_file.open("log.txt");
-		queue = new std::queue<std::string>();
+		log_file.open(fname);
 		thread = new std::thread(&Logger::writer, this);
 		}
-
 	Logger::~Logger()
 		{
+		log("Logger | Flushing logs after engine end");
 		running = false;
 		thread->join();
 		delete thread;
 
-		write_all(queue);
-		delete queue;
+		queue_write.swap(queue_log);
+		write_all();
+		log_file.close();
 		}
-
-	Logger logger;
-	}
