@@ -13,11 +13,11 @@ class Logger
 
 			std::queue<std::string> queue_log;
 			std::queue<std::string> queue_write;
-			std::thread* thread = nullptr;
+			std::thread thread;
 
 			std::condition_variable work_available;
 			std::mutex queue_free;
-			bool running = true;
+			std::atomic<bool> running = true;
 
 			void writer();
 			void write_all();

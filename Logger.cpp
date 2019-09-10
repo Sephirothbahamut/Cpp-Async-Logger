@@ -23,7 +23,6 @@ void Logger::writer()
 
 	void Logger::log(std::string string)
 		{
-		//std::unique_lock<std::mutex> lock(queue_free);
 
 		queue_free.lock();
 		queue_log.push(string);
@@ -34,17 +33,15 @@ void Logger::writer()
 		}
 
 	Logger::Logger() : Logger("log.txt") {}
-	Logger::Logger(std::string fname = "log.txt")
+	Logger::Logger(std::string fname = "log.txt") : thread(&Logger::writer, this)
 		{
 		log_file.open(fname);
-		thread = new std::thread(&Logger::writer, this);
 		}
 	Logger::~Logger()
 		{
 		log("Logger | Flushing logs after engine end");
 		running = false;
-		thread->join();
-		delete thread;
+		thread.join();
 
 		queue_write.swap(queue_log);
 		write_all();
