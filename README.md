@@ -1,3 +1,6 @@
+# NOTE: This repository is no longer maintained. The Logger is now part of my "C++ Utilities" repository. 
+https://github.com/Sephirothbahamut/utils
+
 # Cpp-Async-Logger
 A simple logger that performs file writes in another threads, making "log(string);" calls from the main thread really quick and unexpensive.
 
